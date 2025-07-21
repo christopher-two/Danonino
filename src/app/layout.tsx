@@ -22,7 +22,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased min-h-screen flex flex-col">
         <AppHeader />
-        <main className="flex-grow">{children}</main>
+        <main className="flex-grow pt-24">{children}</main>
         <Toaster />
       </body>
     </html>

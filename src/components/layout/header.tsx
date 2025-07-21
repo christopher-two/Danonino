@@ -23,58 +23,76 @@ export function AppHeader() {
     <Link
       href={href}
       className={cn(
-        "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-primary/10 hover:text-primary",
-        pathname === href ? "text-primary" : "text-foreground/70"
+        "flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-colors hover:bg-primary/10",
+        pathname === href
+          ? "bg-primary/20 text-primary"
+          : "text-foreground/70"
       )}
       onClick={() => setIsMobileMenuOpen(false)}
     >
       <Icon className="h-4 w-4" />
+      <span>{label}</span>
+    </Link>
+  );
+  
+  const MobileNavLink = ({ href, label, icon: Icon }: typeof navLinks[0]) => (
+    <Link
+      href={href}
+      className={cn(
+        "flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium transition-colors hover:bg-primary/10",
+         pathname === href ? "text-primary" : "text-foreground/80"
+      )}
+      onClick={() => setIsMobileMenuOpen(false)}
+    >
+      <Icon className="h-5 w-5" />
       {label}
     </Link>
   );
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
-        <div className="mr-4 flex items-center">
-          <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-            <Heart className="h-6 w-6 text-primary" />
-            <span className="font-headline">Dannonino</span>
-          </Link>
-        </div>
+    <header className="fixed top-4 left-1/2 z-50 -translate-x-1/2">
+       <div className="w-auto container mx-auto rounded-full border border-border/40 bg-background/80 p-2 shadow-lg backdrop-blur-md">
+        <div className="flex h-12 items-center justify-between">
+          <div className="flex items-center gap-4">
+             <Link href="/" className="flex items-center gap-2 font-bold text-lg pl-3">
+               <Heart className="h-6 w-6 text-primary" />
+               <span className="font-headline hidden sm:inline-block">Dannonino</span>
+             </Link>
+          </div>
 
-        <nav className="hidden items-center space-x-2 md:flex">
-          {navLinks.map((link) => (
-            <NavLink key={link.href} {...link} />
-          ))}
-        </nav>
+          <nav className="hidden items-center gap-1 rounded-full bg-secondary/50 p-1 md:flex">
+            {navLinks.map((link) => (
+              <NavLink key={link.href} {...link} />
+            ))}
+          </nav>
 
-        <div className="flex flex-1 items-center justify-end md:hidden">
-          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="h-6 w-6" />
-                <span className="sr-only">Abrir menú</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left">
-              <div className="p-4">
-                <Link
-                  href="/"
-                  className="mb-8 flex items-center gap-2 text-lg font-bold"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <Heart className="h-6 w-6 text-primary" />
-                  <span className="font-headline">Dannonino</span>
-                </Link>
-                <div className="flex flex-col space-y-2">
-                  {navLinks.map((link) => (
-                    <NavLink key={link.href} {...link} />
-                  ))}
+          <div className="flex items-center justify-end md:hidden">
+            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <Menu className="h-6 w-6" />
+                  <span className="sr-only">Abrir menú</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[300px]">
+                <div className="p-4">
+                  <Link
+                    href="/"
+                    className="mb-8 flex items-center gap-2 text-lg font-bold"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Heart className="h-6 w-6 text-primary" />
+                    <span className="font-headline">Dannonino</span>
+                  </Link>
+                  <div className="flex flex-col space-y-2">
+                    {navLinks.map((link) => (
+                      <MobileNavLink key={link.href} {...link} />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </SheetContent>
-          </Sheet>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </div>
     </header>
