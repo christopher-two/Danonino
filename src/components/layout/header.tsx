@@ -1,25 +1,39 @@
 "use client";
 
 import Link from "next/link";
-import { Heart, Menu, Music, Image as ImageIcon, Calendar } from "lucide-react";
+import {
+  Heart,
+  Menu,
+  Music,
+  Image as ImageIcon,
+  Calendar,
+  PawPrint,
+} from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
   { href: "/gallery", label: "Galería", icon: ImageIcon },
   { href: "/timeline", label: "Nuestra Historia", icon: Calendar },
   { href: "/playlist", label: "Playlist", icon: Music },
+  { href: "/joaquin", label: "Joaquín", icon: PawPrint },
 ];
 
 export function AppHeader() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const NavLink = ({ href, label, icon: Icon }: typeof navLinks[0]) => (
+  const NavLink = ({ href, label, icon: Icon }: (typeof navLinks)[0]) => (
     <Link
       href={href}
       className={cn(
@@ -34,13 +48,13 @@ export function AppHeader() {
       <span>{label}</span>
     </Link>
   );
-  
-  const MobileNavLink = ({ href, label, icon: Icon }: typeof navLinks[0]) => (
+
+  const MobileNavLink = ({ href, label, icon: Icon }: (typeof navLinks)[0]) => (
     <Link
       href={href}
       className={cn(
         "flex items-center gap-3 rounded-md px-3 py-3 text-base font-medium transition-colors hover:bg-primary/10",
-         pathname === href ? "text-primary" : "text-foreground/80"
+        pathname === href ? "text-primary" : "text-foreground/80"
       )}
       onClick={() => setIsMobileMenuOpen(false)}
     >
@@ -51,13 +65,18 @@ export function AppHeader() {
 
   return (
     <header className="fixed top-4 left-1/2 z-50 -translate-x-1/2">
-       <div className="container mx-auto rounded-full border border-border/40 bg-background/80 p-2 shadow-lg backdrop-blur-md w-[580px]">
+      <div className="container mx-auto rounded-full border border-border/40 bg-background/80 p-2 shadow-lg backdrop-blur-md w-auto max-w-[90vw] sm:w-[580px]">
         <div className="flex h-12 items-center justify-between px-4">
           <div className="flex items-center gap-4">
-             <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-               <Heart className="h-6 w-6 text-primary" />
-               <span className="font-headline hidden sm:inline-block">Dannonino</span>
-             </Link>
+            <Link
+              href="/"
+              className="flex items-center gap-2 font-bold text-lg"
+            >
+              <Heart className="h-6 w-6 text-primary" />
+              <span className="font-headline hidden sm:inline-block">
+                Dannonino
+              </span>
+            </Link>
           </div>
 
           <nav className="hidden items-center gap-2 rounded-full bg-secondary/50 p-1 md:flex">
@@ -75,6 +94,9 @@ export function AppHeader() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-[300px]">
+                <SheetHeader>
+                  <SheetTitle className="sr-only">Menú de Navegación</SheetTitle>
+                </SheetHeader>
                 <div className="p-4">
                   <Link
                     href="/"
