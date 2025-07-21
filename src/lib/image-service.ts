@@ -31,7 +31,6 @@ const drive = google.drive({
 });
 
 async function getImagesFromDrive(): Promise<DriveImage[]> {
-  // noStore() is removed to enable caching
   if (!apiKey || !folderId) {
     console.warn('Google Drive API key or Folder ID is not configured.');
     return [];
@@ -44,9 +43,8 @@ async function getImagesFromDrive(): Promise<DriveImage[]> {
       key: apiKey,
     });
 
-    if (res.data.files) {
+    if (res.data.files && res.data.files.length > 0) {
       return res.data.files.map((file) => ({
-        // Use thumbnailLink and modify it for a higher resolution version
         src: file.thumbnailLink ? file.thumbnailLink.replace(/=s\d+/, '=s800') : `https://placehold.co/600x400.png`,
         alt: file.name || 'Imagen de Dany',
         hint: 'couple love',
@@ -106,13 +104,13 @@ function getFallbackImages(count = 20) {
 
 export async function getCollageImages() {
   const driveImages = await getImagesFromDrive();
-  if (!driveImages.length) return getFallbackImages(40);
+  if (driveImages.length === 0) return getFallbackImages(40);
   return driveImages;
 }
 
 export async function getGalleryPhotos() {
   const driveImages = await getImagesFromDrive();
-  if (!driveImages.length) return getFallbackImages(50);
+  if (driveImages.length === 0) return getFallbackImages(50);
   return driveImages;
 }
 
