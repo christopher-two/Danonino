@@ -93,7 +93,7 @@ function EventForm({ event, onFormSubmit }: { event?: Event; onFormSubmit: () =>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={date} onSelect={setDate} initialFocus /></PopoverContent>
         </Popover>
-        <input type="hidden" name="date" value={date?.toISOString()} />
+        <input type="hidden" name="date" value={date?.toISOString() || ""} />
         {state.errors?.date && <p className="col-span-4 text-right text-xs text-destructive">{state.errors.date[0]}</p>}
       </div>
       <div className="grid grid-cols-4 items-center gap-4">
