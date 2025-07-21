@@ -17,15 +17,15 @@ export default async function TimelinePage() {
         </div>
       </div>
       
-      <div className="relative wrap overflow-hidden p-10 h-full">
-        <div className="border-2-2 absolute border-opacity-20 border-border h-full border" style={{left: '50%'}}></div>
+      <div className="relative wrap overflow-hidden p-4 md:p-10 h-full">
+        <div className="absolute border-opacity-20 border-border h-full border-2 left-6 -translate-x-1/2 md:left-1/2 md:-translate-x-1/2"></div>
         {memories.map((memory, index) => (
-          <div key={memory.id || index} className={`mb-8 flex justify-between items-center w-full ${index % 2 === 0 ? 'flex-row-reverse left-timeline' : 'right-timeline'}`}>
-            <div className="order-1 w-5/12"></div>
+          <div key={memory.id || index} className={`mb-8 flex md:justify-between items-center w-full ${index % 2 === 0 ? 'md:flex-row-reverse' : ''}`}>
+            <div className="order-1 w-5/12 hidden md:block"></div>
             <div className="z-20 flex items-center order-1 bg-primary shadow-xl w-8 h-8 rounded-full">
               <Heart className="mx-auto font-semibold text-sm text-primary-foreground" size={16} />
             </div>
-            <div className="order-1 w-5/12 px-6 py-4 animate-in fade-in-0 duration-700">
+            <div className="order-1 w-full md:w-5/12 pl-8 md:px-6 py-4 animate-in fade-in-0 duration-700">
               <Card>
                 {memory.image && (
                   <div className="relative aspect-[3/2] w-full">
