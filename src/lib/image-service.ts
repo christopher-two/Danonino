@@ -1,7 +1,6 @@
 import 'server-only';
 import { db } from './firebase';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-import { unstable_noStore as noStore } from 'next/cache';
 import { google } from 'googleapis';
 
 interface Moment {
@@ -22,15 +21,21 @@ interface DriveImage {
   hint: string;
 }
 
+interface Adventure {
+  title: string;
+  images: DriveImage[];
+}
+
 const apiKey = process.env.GOOGLE_API_KEY;
-const folderId = process.env.DRIVE_FOLDER_ID;
+const driveFolderId = process.env.DRIVE_FOLDER_ID;
+const joaquinDriveFolderId = process.env.DRIVE_FOLDER_ID_JOAQUIN;
 
 const drive = google.drive({
   version: 'v3',
   auth: apiKey,
 });
 
-async function getImagesFromDrive(): Promise<DriveImage[]> {
+async function getImagesFromDriveFolder(folderId: string): Promise<DriveImage[]> {
   if (!apiKey || !folderId) {
     console.warn('Google Drive API key or Folder ID is not configured.');
     return [];
@@ -51,14 +56,17 @@ async function getImagesFromDrive(): Promise<DriveImage[]> {
       }));
     }
   } catch (error) {
-    console.error('Error fetching images from Google Drive:', error);
+    console.error(`Error fetching images from Google Drive folder ${folderId}:`, error);
   }
   return [];
 }
 
 
 async function getMomentsFromFirestore(): Promise<Moment[]> {
+  // This remains dynamic to show new memories instantly
+  const { unstable_noStore: noStore } = await import('next/cache');
   noStore();
+  
   try {
     const momentsCollection = collection(db, 'moments');
     const q = query(momentsCollection, orderBy('date', 'desc'));
@@ -103,13 +111,15 @@ function getFallbackImages(count = 20) {
 }
 
 export async function getCollageImages() {
-  const driveImages = await getImagesFromDrive();
+  if (!driveFolderId) return getFallbackImages(40);
+  const driveImages = await getImagesFromDriveFolder(driveFolderId);
   if (driveImages.length === 0) return getFallbackImages(40);
   return driveImages;
 }
 
 export async function getGalleryPhotos() {
-  const driveImages = await getImagesFromDrive();
+  if (!driveFolderId) return getFallbackImages(50);
+  const driveImages = await getImagesFromDriveFolder(driveFolderId);
   if (driveImages.length === 0) return getFallbackImages(50);
   return driveImages;
 }
@@ -128,4 +138,56 @@ export async function getTimelineMemories() {
     ];
   }
   return moments;
+}
+
+
+// --- Joaquin's Adventures Logic ---
+// This function is completely separate as requested.
+
+export async function getJoaquinAdventures(): Promise<Adventure[]> {
+  if (!apiKey || !joaquinDriveFolderId) {
+    console.warn("Google Drive API key or Joaquin's Folder ID is not configured.");
+    return [];
+  }
+
+  try {
+    // 1. Get all folders (adventures) inside the main Joaquin folder
+    const adventureFoldersRes = await drive.files.list({
+      q: `'${joaquinDriveFolderId}' in parents and mimeType = 'application/vnd.google-apps.folder'`,
+      fields: 'files(id, name)',
+      key: apiKey,
+    });
+
+    const adventureFolders = adventureFoldersRes.data.files;
+    if (!adventureFolders || adventureFolders.length === 0) {
+      return [];
+    }
+    
+    // 2. For each adventure folder, get its images
+    const adventures: Adventure[] = await Promise.all(
+      adventureFolders.map(async (folder) => {
+        const imagesRes = await drive.files.list({
+          q: `'${folder.id}' in parents and mimeType contains 'image/'`,
+          fields: 'files(id, name, thumbnailLink)',
+          key: apiKey,
+        });
+
+        const images = imagesRes.data.files ? imagesRes.data.files.map(file => ({
+          src: file.thumbnailLink ? file.thumbnailLink.replace(/=s\d+/, '=s800') : `https://placehold.co/600x400.png`,
+          alt: file.name || folder.name || 'Aventura de Joaquín',
+          hint: 'dog pet',
+        })) : [];
+
+        return {
+          title: folder.name || 'Aventura sin nombre',
+          images: images,
+        };
+      })
+    );
+
+    return adventures;
+  } catch (error) {
+    console.error("Error fetching Joaquin's adventures from Google Drive:", error);
+    return [];
+  }
 }
