@@ -30,6 +30,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const navLinks = [
+  { href: "/", label: "Inicio", icon: Heart },
   { href: "/gallery", label: "Galería", icon: ImageIcon },
   { href: "/timeline", label: "Nuestra Historia", icon: Calendar },
   { href: "/playlist", label: "Playlist", icon: Music },
@@ -81,30 +82,23 @@ export function AppHeader() {
 
   return (
     <header className="fixed top-4 left-1/2 z-50 -translate-x-1/2">
-      <div className="container mx-auto rounded-full border border-border/40 bg-background/80 p-2 shadow-lg backdrop-blur-md w-auto">
-        <div className="flex h-12 items-center justify-between px-4">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/"
-              className="flex items-center gap-2 font-bold text-lg"
-            >
-              <Heart className="h-6 w-6 text-primary" />
-              <span className="font-headline hidden sm:inline-block">
-                Dannonino
-              </span>
-            </Link>
-          </div>
+      <div className="container mx-auto flex items-center justify-center">
+        {/* Desktop Nav */}
+        <nav className="hidden items-center gap-1 rounded-full border border-border/40 bg-background/80 p-1 shadow-lg backdrop-blur-md md:flex">
+          {navLinks.map((link) => (
+            <NavLink key={link.href} {...link} />
+          ))}
+        </nav>
 
-          <nav className="hidden items-center gap-1 rounded-full bg-secondary/50 p-1 md:flex">
-            {navLinks.map((link) => (
-              <NavLink key={link.href} {...link} />
-            ))}
-          </nav>
-
-          <div className="flex items-center justify-end md:hidden">
-            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+        {/* Mobile Nav */}
+        <div className="flex items-center justify-end md:hidden">
+           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
+                 <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full border border-border/40 bg-background/80 p-2 shadow-lg backdrop-blur-md"
+                >
                   <Menu className="h-6 w-6" />
                   <span className="sr-only">Abrir menú</span>
                 </Button>
@@ -130,7 +124,6 @@ export function AppHeader() {
                 </div>
               </SheetContent>
             </Sheet>
-          </div>
         </div>
       </div>
     </header>
