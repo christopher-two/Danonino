@@ -1,7 +1,15 @@
 import type { Metadata } from 'next';
+import { Alegreya } from 'next/font/google';
 import './globals.css';
 import { AppHeader } from '@/components/layout/header';
 import { Toaster } from '@/components/ui/toaster';
+import { cn } from '@/lib/utils';
+
+const alegreya = Alegreya({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-alegreya',
+});
 
 export const metadata: Metadata = {
   title: 'Dannonino',
@@ -14,15 +22,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="dark">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Alegreya:wght@400;700&display=swap" rel="stylesheet" />
-      </head>
+    <html lang="es" className={cn('dark', alegreya.variable)}>
+      <head />
       <body className="font-body antialiased min-h-screen flex flex-col">
         <AppHeader />
-        <main className="flex-grow pt-24">{children}</main>
+        <main className="flex-grow">{children}</main>
         <Toaster />
       </body>
     </html>
