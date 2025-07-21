@@ -21,7 +21,7 @@ interface DriveImage {
   hint: string;
 }
 
-interface Adventure {
+export interface Adventure {
   title: string;
   images: DriveImage[];
 }
@@ -45,7 +45,6 @@ async function getImagesFromDriveFolder(folderId: string): Promise<DriveImage[]>
     const res = await drive.files.list({
       q: `'${folderId}' in parents and mimeType contains 'image/'`,
       fields: 'files(id, name, thumbnailLink)',
-      key: apiKey,
     });
 
     if (res.data.files && res.data.files.length > 0) {
@@ -155,7 +154,6 @@ export async function getJoaquinAdventures(): Promise<Adventure[]> {
     const adventureFoldersRes = await drive.files.list({
       q: `'${joaquinDriveFolderId}' in parents and mimeType = 'application/vnd.google-apps.folder'`,
       fields: 'files(id, name)',
-      key: apiKey,
     });
 
     const adventureFolders = adventureFoldersRes.data.files;
@@ -169,7 +167,6 @@ export async function getJoaquinAdventures(): Promise<Adventure[]> {
         const imagesRes = await drive.files.list({
           q: `'${folder.id}' in parents and mimeType contains 'image/'`,
           fields: 'files(id, name, thumbnailLink)',
-          key: apiKey,
         });
 
         const images = imagesRes.data.files ? imagesRes.data.files.map(file => ({
@@ -185,7 +182,7 @@ export async function getJoaquinAdventures(): Promise<Adventure[]> {
       })
     );
 
-    return adventures;
+    return adventures.filter(adventure => adventure.images.length > 0).sort((a, b) => a.title.localeCompare(b.title));
   } catch (error) {
     console.error("Error fetching Joaquin's adventures from Google Drive:", error);
     return [];
