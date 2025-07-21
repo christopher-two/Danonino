@@ -28,14 +28,16 @@ export default async function TimelinePage() {
             <div className="order-1 w-5/12 px-6 py-4 animate-in fade-in-0 duration-700">
               <Card>
                 {memory.image && (
-                  <Image
-                    src={memory.image.src}
-                    alt={memory.image.alt}
-                    width={600}
-                    height={400}
-                    className="w-full h-auto object-cover rounded-t-lg"
-                    data-ai-hint={memory.image.hint}
-                  />
+                  <div className="relative aspect-[3/2] w-full">
+                    <Image
+                      src={memory.image.src}
+                      alt={memory.image.alt}
+                      fill
+                      className="object-cover rounded-t-lg"
+                      data-ai-hint={memory.image.hint}
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
+                  </div>
                 )}
                 <CardHeader>
                   <p className="text-sm text-muted-foreground">{memory.date}</p>

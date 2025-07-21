@@ -1,6 +1,6 @@
 import 'server-only';
 import { db } from './firebase';
-import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { unstable_noStore as noStore } from 'next/cache';
 import { google } from 'googleapis';
 
@@ -39,7 +39,7 @@ async function getImagesFromDrive(): Promise<DriveImage[]> {
   try {
     const res = await drive.files.list({
       q: `'${folderId}' in parents and mimeType contains 'image/'`,
-      fields: 'files(id, name, webViewLink, thumbnailLink)',
+      fields: 'files(id, name, thumbnailLink)',
       key: apiKey,
     });
 
@@ -66,7 +66,7 @@ async function getMomentsFromFirestore(): Promise<Moment[]> {
 
     const momentsList = momentsSnapshot.docs.map(doc => {
       const data = doc.data();
-      const imageUrl = data.image?.src || data.image;
+      const imageUrl = data.image;
 
       let hint = "couple love";
       if (data.title) {
