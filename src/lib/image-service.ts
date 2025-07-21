@@ -2,6 +2,8 @@ import 'server-only';
 import { db } from './firebase';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { google } from 'googleapis';
+import { unstable_noStore as noStore } from 'next/cache';
+
 
 interface Moment {
   id: string;
@@ -24,6 +26,13 @@ interface DriveImage {
 export interface Adventure {
   title: string;
   images: DriveImage[];
+}
+
+export interface Event {
+  id: string;
+  date: string;
+  title: string;
+  description: string;
 }
 
 const apiKey = process.env.GOOGLE_API_KEY;
@@ -63,7 +72,6 @@ async function getImagesFromDriveFolder(folderId: string): Promise<DriveImage[]>
 
 async function getMomentsFromFirestore(): Promise<Moment[]> {
   // This remains dynamic to show new memories instantly
-  const { unstable_noStore: noStore } = await import('next/cache');
   noStore();
   
   try {
@@ -141,7 +149,6 @@ export async function getTimelineMemories() {
 
 
 // --- Joaquin's Adventures Logic ---
-// This function is completely separate as requested.
 
 export async function getJoaquinAdventures(): Promise<Adventure[]> {
   if (!apiKey || !joaquinDriveFolderId) {
@@ -150,7 +157,6 @@ export async function getJoaquinAdventures(): Promise<Adventure[]> {
   }
 
   try {
-    // 1. Get all folders (adventures) inside the main Joaquin folder
     const adventureFoldersRes = await drive.files.list({
       q: `'${joaquinDriveFolderId}' in parents and mimeType = 'application/vnd.google-apps.folder'`,
       fields: 'files(id, name)',
@@ -161,7 +167,6 @@ export async function getJoaquinAdventures(): Promise<Adventure[]> {
       return [];
     }
     
-    // 2. For each adventure folder, get its images
     const adventures: Adventure[] = await Promise.all(
       adventureFolders.map(async (folder) => {
         const imagesRes = await drive.files.list({
@@ -185,6 +190,25 @@ export async function getJoaquinAdventures(): Promise<Adventure[]> {
     return adventures.filter(adventure => adventure.images.length > 0).sort((a, b) => a.title.localeCompare(b.title));
   } catch (error) {
     console.error("Error fetching Joaquin's adventures from Google Drive:", error);
+    return [];
+  }
+}
+
+// --- Events Logic ---
+
+export async function getEvents(): Promise<Event[]> {
+  noStore(); // Always fetch the latest events
+  try {
+    const eventsCollection = collection(db, 'events');
+    const q = query(eventsCollection, orderBy('date', 'asc'));
+    const eventsSnapshot = await getDocs(q);
+
+    return eventsSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    } as Event));
+  } catch (error) {
+    console.error("Error al obtener eventos desde Firestore:", error);
     return [];
   }
 }
