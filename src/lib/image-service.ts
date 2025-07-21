@@ -31,7 +31,7 @@ const drive = google.drive({
 });
 
 async function getImagesFromDrive(): Promise<DriveImage[]> {
-  noStore();
+  // noStore() is removed to enable caching
   if (!apiKey || !folderId) {
     console.warn('Google Drive API key or Folder ID is not configured.');
     return [];
