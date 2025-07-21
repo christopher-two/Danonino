@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart } from "lucide-react";
 import { getTimelineMemories } from "@/lib/image-service";
 
-export default function TimelinePage() {
-  const memories = getTimelineMemories();
+export default async function TimelinePage() {
+  const memories = await getTimelineMemories();
 
   return (
     <div className="container mx-auto px-4 py-8">

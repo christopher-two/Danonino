@@ -1,18 +1,18 @@
 import Image from "next/image";
 import { getCollageImages } from "@/lib/image-service";
 
-export default function Home() {
-  const collageImages = getCollageImages();
+export default async function Home() {
+  const collageImages = await getCollageImages();
   
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-[calc(100vh-56px)] text-center p-4 overflow-hidden">
+    <div className="relative flex flex-col items-center justify-center min-h-screen text-center p-4 overflow-hidden">
       <div className="absolute inset-0 w-full h-full -z-20">
         <div className="relative w-full h-full">
           {collageImages.map((img, i) => (
              <Image
               key={i}
               src={img.src}
-              alt="Collage image"
+              alt={img.alt}
               width={200}
               height={300}
               data-ai-hint={img.hint}
