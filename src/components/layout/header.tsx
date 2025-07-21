@@ -23,7 +23,7 @@ export function AppHeader() {
     <Link
       href={href}
       className={cn(
-        "flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-colors hover:bg-primary/10",
+        "flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-primary/10",
         pathname === href
           ? "bg-primary/20 text-primary"
           : "text-foreground/70"
@@ -51,16 +51,16 @@ export function AppHeader() {
 
   return (
     <header className="fixed top-4 left-1/2 z-50 -translate-x-1/2">
-       <div className="w-auto container mx-auto rounded-full border border-border/40 bg-background/80 p-2 shadow-lg backdrop-blur-md">
-        <div className="flex h-12 items-center justify-between">
+       <div className="container mx-auto rounded-full border border-border/40 bg-background/80 p-2 shadow-lg backdrop-blur-md w-[580px]">
+        <div className="flex h-12 items-center justify-between px-4">
           <div className="flex items-center gap-4">
-             <Link href="/" className="flex items-center gap-2 font-bold text-lg pl-3">
+             <Link href="/" className="flex items-center gap-2 font-bold text-lg">
                <Heart className="h-6 w-6 text-primary" />
                <span className="font-headline hidden sm:inline-block">Dannonino</span>
              </Link>
           </div>
 
-          <nav className="hidden items-center gap-1 rounded-full bg-secondary/50 p-1 md:flex">
+          <nav className="hidden items-center gap-2 rounded-full bg-secondary/50 p-1 md:flex">
             {navLinks.map((link) => (
               <NavLink key={link.href} {...link} />
             ))}
