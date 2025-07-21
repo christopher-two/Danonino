@@ -1,120 +1,95 @@
 import 'server-only';
-import { google } from 'googleapis';
+import { db } from './firebase';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 
-const drive = google.drive('v3');
+interface Moment {
+  id: string;
+  date: string;
+  title: string;
+  description: string;
+  image: {
+    src: string;
+    alt: string;
+    hint: string;
+  };
+}
 
 // Cache para evitar llamadas repetidas a la API durante la misma solicitud.
-let imageCache: any[] | null = null;
+let momentCache: Moment[] | null = null;
 let lastFetchTime: number | null = null;
 const CACHE_DURATION = 300000; // 5 minutos en milisegundos
 
-async function getImagesFromDrive() {
+async function getMomentsFromFirestore(): Promise<Moment[]> {
   const now = Date.now();
-  if (imageCache && lastFetchTime && (now - lastFetchTime < CACHE_DURATION)) {
-    return imageCache;
+  if (momentCache && lastFetchTime && now - lastFetchTime < CACHE_DURATION) {
+    return momentCache;
   }
 
   try {
-    // Para esta autenticación solo se necesita la API Key.
-    // La carpeta y sus contenidos deben ser públicos.
-    const folderId = process.env.DRIVE_FOLDER_ID;
-    const apiKey = process.env.GOOGLE_API_KEY;
+    const momentsCollection = collection(db, 'moments');
+    // Ordenamos por fecha descendente para tener los recuerdos más recientes primero
+    const q = query(momentsCollection, orderBy('date', 'desc'));
+    const momentsSnapshot = await getDocs(q);
 
-    if (!folderId || !apiKey) {
-      throw new Error("La carpeta de Drive o la clave de API no están configuradas en .env");
-    }
-
-    const res = await drive.files.list({
-      q: `'${folderId}' in parents and mimeType contains 'image/'`,
-      fields: 'files(id, name, webViewLink, thumbnailLink)',
-      key: apiKey,
-      pageSize: 100, // Aumentamos el tamaño para obtener más imágenes
+    const momentsList = momentsSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        date: data.date,
+        title: data.title,
+        description: data.description,
+        image: {
+          src: data.image,
+          alt: data.title,
+          hint: "couple love", // Hint genérico
+        },
+      };
     });
-
-    const files = res.data.files;
-    if (!files || files.length === 0) {
-      console.warn("No se encontraron imágenes en la carpeta de Google Drive o la carpeta está vacía.");
-      return [];
-    }
-
-    const processedFiles = files.map(file => ({
-      // Usamos thumbnailLink para vistas previas y webViewLink para una URL visible.
-      // Para acceso directo al contenido, se necesitaría webContentLink, que es más complejo de manejar.
-      // Modificamos thumbnailLink para obtener una imagen más grande.
-      src: file.thumbnailLink ? file.thumbnailLink.replace(/=s\d+$/, '=s800') : `https://placehold.co/600x400.png`,
-      alt: file.name || "Imagen de Drive",
-      hint: "couple love", // Usamos un hint genérico
-    }));
     
-    imageCache = processedFiles;
+    momentCache = momentsList;
     lastFetchTime = now;
-
-    return processedFiles;
-
+    
+    return momentsList;
   } catch (error) {
-    console.error("Error al obtener imágenes de Google Drive:", error);
-    // En caso de error, devolvemos un conjunto de imágenes de muestra para que la app no se rompa.
-    return getFallbackImages();
+    console.error("Error al obtener momentos desde Firestore:", error);
+    return [];
   }
 }
 
 function getFallbackImages(count = 20) {
   return Array.from({ length: count }, (_, i) => ({
-    src: `https://placehold.co/600x400.png?text=Fallback+${i+1}`,
-    alt: `Fallback image ${i+1}`,
+    src: `https://placehold.co/600x400.png?text=Fallback+${i + 1}`,
+    alt: `Fallback image ${i + 1}`,
     hint: "placeholder image",
   }));
 }
 
-
-// Función para obtener un subconjunto aleatorio de imágenes
-async function getRandomImages(count: number) {
-  const allImages = await getImagesFromDrive();
-  if (allImages.length === 0) return getFallbackImages(count);
-
-  const shuffled = allImages.sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, count);
-}
-
 export async function getCollageImages() {
-  // Solicitamos más imágenes para un collage denso
-  return getRandomImages(20);
+  const moments = await getMomentsFromFirestore();
+  if (!moments.length) return getFallbackImages(20);
+  // Devolvemos solo la parte de la imagen para el collage
+  return moments.map(m => m.image);
 }
 
 export async function getGalleryPhotos() {
-  const allImages = await getImagesFromDrive();
-   if (allImages.length === 0) return getFallbackImages(50);
-   return allImages;
+  const moments = await getMomentsFromFirestore();
+  if (!moments.length) return getFallbackImages(50);
+   // Devolvemos solo la parte de la imagen para la galería
+  return moments.map(m => m.image);
 }
 
 export async function getTimelineMemories() {
-    const images = await getRandomImages(4);
-    
-    // Usamos las imágenes obtenidas para los recuerdos
+  const moments = await getMomentsFromFirestore();
+  if (!moments.length) {
+    // Devolvemos datos de ejemplo si no hay nada en firestore
     return [
-        {
-          date: "14 de Febrero, 2021",
-          title: "Nuestro Primer Beso",
-          description: "Esa noche estrellada, bajo el viejo roble, cuando nuestros mundos se unieron en un instante mágico. Fue el comienzo de todo.",
-          image: images[0] || { src: "https://placehold.co/600x400.png", alt: "Primer beso", hint: "first kiss" },
-        },
-        {
-          date: "20 de Julio, 2021",
-          title: "El Viaje a la Playa",
-          description: "Recorrimos la costa, con el sol en la piel y el viento en el pelo. Cada ola parecía celebrar nuestro amor. Construimos castillos de arena y sueños.",
-          image: images[1] || { src: "https://placehold.co/600x400.png", alt: "Viaje a la playa", hint: "beach trip" },
-        },
-        {
-          date: "25 de Diciembre, 2022",
-          title: "Nuestra Primera Navidad Juntos",
-          description: "Las luces, los regalos, y el calor de la chimenea. Pero el mejor regalo fuiste tú, tu sonrisa iluminando la habitación.",
-          image: images[2] || { src: "https://placehold.co/600x400.png", alt: "Navidad juntos", hint: "christmas together" },
-        },
-        {
-          date: "1 de Mayo, 2023",
-          title: "Adoptamos a Nube",
-          description: "Llegó a nuestras vidas esa pequeña bola de pelos y la llenó de alegría y travesuras. Nuestra familia creció ese día.",
-          image: images[3] || { src: "https://placehold.co/600x400.png", alt: "Nuestra mascota Nube", hint: "puppy adoption" },
-        },
+      {
+        date: "Fecha de ejemplo",
+        title: "Recuerdo de ejemplo",
+        description: "Esta es una descripción de ejemplo. Conecta tu base de datos de Firestore para ver tus recuerdos.",
+        image: { src: "https://placehold.co/600x400.png", alt: "Ejemplo", hint: "placeholder" },
+      },
     ];
+  }
+  return moments;
 }
