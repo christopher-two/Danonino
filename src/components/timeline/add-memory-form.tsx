@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useFormState } from "react-dom";
+import { useState, useEffect, useActionState } from "react";
 import { CalendarIcon, PlusCircle } from "lucide-react";
 import { format } from "date-fns";
 import { es } from 'date-fns/locale';
@@ -25,7 +24,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { addMemoryAction, type FormState } from "@/app/timeline/actions";
-import { useEffect } from "react";
 
 function SubmitButton() {
   return (
@@ -42,7 +40,7 @@ export function AddMemoryForm() {
   const { toast } = useToast();
 
   const initialState: FormState = { message: "", errors: {} };
-  const [state, dispatch] = useFormState(addMemoryAction, initialState);
+  const [state, dispatch] = useActionState(addMemoryAction, initialState);
 
   useEffect(() => {
     if (state.message) {
