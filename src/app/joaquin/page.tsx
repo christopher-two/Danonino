@@ -19,7 +19,7 @@ export default async function JoaquinPage() {
                 Las Aventuras de Joaquín
             </h1>
             <p className="text-lg text-foreground/80 mt-2 max-w-2xl mx-auto animate-in fade-in-0 slide-in-from-top-4 duration-700 delay-200">
-                Un vistazo a las travesuras y momentos inolvidables de nuestro amigo de cuatro patas.
+                Un vistazo a las travesuras y momentos inolvidables de nuestro amigo el ternurin.
             </p>
         </div>
         {adventures.length > 0 ? (
