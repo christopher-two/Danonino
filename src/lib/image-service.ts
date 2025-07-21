@@ -15,16 +15,8 @@ async function getImagesFromDrive() {
   }
 
   try {
-    const auth = new google.auth.GoogleAuth({
-      scopes: ['https://www.googleapis.com/auth/drive.readonly'],
-    });
-
-    // Esta autenticación intentará usar las credenciales de servicio del entorno de App Hosting.
-    // Para desarrollo local, necesitarás configurar las credenciales.
-    // Una forma es usar `gcloud auth application-default login`
-    const authClient = await auth.getClient();
-    google.options({ auth: authClient });
-
+    // Para esta autenticación solo se necesita la API Key.
+    // La carpeta y sus contenidos deben ser públicos.
     const folderId = process.env.DRIVE_FOLDER_ID;
     const apiKey = process.env.GOOGLE_API_KEY;
 
@@ -91,7 +83,7 @@ export async function getCollageImages() {
 
 export async function getGalleryPhotos() {
   const allImages = await getImagesFromDrive();
-   if (allImages.length === 0) return getFallbackImages(12);
+   if (allImages.length === 0) return getFallbackImages(50);
    return allImages;
 }
 
