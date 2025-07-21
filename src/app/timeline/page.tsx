@@ -2,14 +2,20 @@ import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart } from "lucide-react";
 import { getTimelineMemories } from "@/lib/image-service";
+import { AddMemoryForm } from "@/components/timeline/add-memory-form";
 
 export default async function TimelinePage() {
   const memories = await getTimelineMemories();
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="mb-8 text-center text-4xl font-bold font-headline text-primary">Nuestra Historia de Amor</h1>
-      <p className="text-center text-lg text-foreground/80 mb-16 max-w-2xl mx-auto">Un viaje a través del tiempo, reviviendo los momentos que han tejido el hermoso tapiz de nuestra vida juntos.</p>
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-bold font-headline text-primary">Nuestra Historia de Amor</h1>
+        <p className="text-lg text-foreground/80 mt-2 max-w-2xl mx-auto">Un viaje a través del tiempo, reviviendo los momentos que han tejido el hermoso tapiz de nuestra vida juntos.</p>
+        <div className="mt-6">
+          <AddMemoryForm />
+        </div>
+      </div>
       
       <div className="relative wrap overflow-hidden p-10 h-full">
         <div className="border-2-2 absolute border-opacity-20 border-border h-full border" style={{left: '50%'}}></div>

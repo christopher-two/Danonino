@@ -1,6 +1,7 @@
 import 'server-only';
 import { db } from './firebase';
 import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import { unstable_noStore as noStore } from 'next/cache';
 
 interface Moment {
   id: string;
@@ -14,16 +15,9 @@ interface Moment {
   };
 }
 
-let momentCache: Moment[] | null = null;
-let lastFetchTime: number | null = null;
-const CACHE_DURATION = 300000; // 5 minutos en milisegundos
-
 async function getMomentsFromFirestore(): Promise<Moment[]> {
-  const now = Date.now();
-  if (momentCache && lastFetchTime && now - lastFetchTime < CACHE_DURATION) {
-    return momentCache;
-  }
-
+  noStore(); // Opt out of caching for this function
+  
   try {
     const momentsCollection = collection(db, 'moments');
     const q = query(momentsCollection, orderBy('date', 'desc'));
@@ -33,7 +27,6 @@ async function getMomentsFromFirestore(): Promise<Moment[]> {
       const data = doc.data();
       const imageUrl = data.image?.src || data.image; // Handle both object and string format
 
-      // A simple regex to extract a hint from the title or description
       let hint = "couple love";
       if (data.title) {
         const match = data.title.match(/\b(viaje|playa|aniversario|boda|fiesta|concierto|parque|montaña)\b/i);
@@ -52,9 +45,6 @@ async function getMomentsFromFirestore(): Promise<Moment[]> {
         },
       };
     }).filter(m => m.image.src); // Filter out moments without a valid image src
-    
-    momentCache = momentsList;
-    lastFetchTime = now;
     
     return momentsList;
   } catch (error) {
