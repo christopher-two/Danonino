@@ -1,6 +1,6 @@
 import 'server-only';
 import { db } from './firebase';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
 
 interface Moment {
   id: string;
@@ -14,7 +14,6 @@ interface Moment {
   };
 }
 
-// Cache para evitar llamadas repetidas a la API durante la misma solicitud.
 let momentCache: Moment[] | null = null;
 let lastFetchTime: number | null = null;
 const CACHE_DURATION = 300000; // 5 minutos en milisegundos
@@ -27,24 +26,32 @@ async function getMomentsFromFirestore(): Promise<Moment[]> {
 
   try {
     const momentsCollection = collection(db, 'moments');
-    // Ordenamos por fecha descendente para tener los recuerdos más recientes primero
     const q = query(momentsCollection, orderBy('date', 'desc'));
     const momentsSnapshot = await getDocs(q);
 
     const momentsList = momentsSnapshot.docs.map(doc => {
       const data = doc.data();
+      const imageUrl = data.image?.src || data.image; // Handle both object and string format
+
+      // A simple regex to extract a hint from the title or description
+      let hint = "couple love";
+      if (data.title) {
+        const match = data.title.match(/\b(viaje|playa|aniversario|boda|fiesta|concierto|parque|montaña)\b/i);
+        if (match) hint = match[0].toLowerCase();
+      }
+
       return {
         id: doc.id,
         date: data.date,
         title: data.title,
         description: data.description,
         image: {
-          src: data.image,
-          alt: data.title,
-          hint: "couple love", // Hint genérico
+          src: imageUrl,
+          alt: data.title || 'Recuerdo de Dany',
+          hint: hint,
         },
       };
-    });
+    }).filter(m => m.image.src); // Filter out moments without a valid image src
     
     momentCache = momentsList;
     lastFetchTime = now;
@@ -58,36 +65,35 @@ async function getMomentsFromFirestore(): Promise<Moment[]> {
 
 function getFallbackImages(count = 20) {
   return Array.from({ length: count }, (_, i) => ({
-    src: `https://placehold.co/600x400.png?text=Fallback+${i + 1}`,
+    src: `https://placehold.co/600x400.png`,
     alt: `Fallback image ${i + 1}`,
     hint: "placeholder image",
   }));
 }
 
+
 export async function getCollageImages() {
   const moments = await getMomentsFromFirestore();
-  if (!moments.length) return getFallbackImages(20);
-  // Devolvemos solo la parte de la imagen para el collage
+  if (!moments.length) return getFallbackImages(40);
   return moments.map(m => m.image);
 }
 
 export async function getGalleryPhotos() {
   const moments = await getMomentsFromFirestore();
   if (!moments.length) return getFallbackImages(50);
-   // Devolvemos solo la parte de la imagen para la galería
   return moments.map(m => m.image);
 }
 
 export async function getTimelineMemories() {
   const moments = await getMomentsFromFirestore();
   if (!moments.length) {
-    // Devolvemos datos de ejemplo si no hay nada en firestore
     return [
       {
-        date: "Fecha de ejemplo",
-        title: "Recuerdo de ejemplo",
-        description: "Esta es una descripción de ejemplo. Conecta tu base de datos de Firestore para ver tus recuerdos.",
-        image: { src: "https://placehold.co/600x400.png", alt: "Ejemplo", hint: "placeholder" },
+        id: 'fallback-1',
+        date: "2024-01-01",
+        title: "Recuerdo de Ejemplo",
+        description: "Esta es una descripción de ejemplo. Parece que no se pudieron cargar tus recuerdos desde Firestore. ¡Asegúrate de que la colección 'moments' tenga datos!",
+        image: { src: "https://placehold.co/600x400.png", alt: "Imagen de ejemplo", hint: "placeholder" },
       },
     ];
   }
