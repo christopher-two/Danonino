@@ -1,4 +1,3 @@
-import { AiPoemGenerator } from "@/components/ai-poem-generator";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Image as ImageIcon, Calendar, Music } from 'lucide-react';
@@ -31,9 +30,6 @@ export default function Home() {
         </Button>
       </div>
       
-      <div className="animate-in fade-in-0 duration-500 delay-300">
-        <AiPoemGenerator />
-      </div>
     </div>
   );
 }
