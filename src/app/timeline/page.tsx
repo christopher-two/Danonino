@@ -1,35 +1,11 @@
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart } from "lucide-react";
-
-const memories = [
-  {
-    date: "14 de Febrero, 2021",
-    title: "Nuestro Primer Beso",
-    description: "Esa noche estrellada, bajo el viejo roble, cuando nuestros mundos se unieron en un instante mágico. Fue el comienzo de todo.",
-    image: { src: "https://placehold.co/600x400.png", alt: "Primer beso", hint: "first kiss" },
-  },
-  {
-    date: "20 de Julio, 2021",
-    title: "El Viaje a la Playa",
-    description: "Recorrimos la costa, con el sol en la piel y el viento en el pelo. Cada ola parecía celebrar nuestro amor. Construimos castillos de arena y sueños.",
-    image: { src: "https://placehold.co/600x400.png", alt: "Viaje a la playa", hint: "beach trip" },
-  },
-  {
-    date: "25 de Diciembre, 2022",
-    title: "Nuestra Primera Navidad Juntos",
-    description: "Las luces, los regalos, y el calor de la chimenea. Pero el mejor regalo fuiste tú, tu sonrisa iluminando la habitación.",
-    image: { src: "https://placehold.co/600x400.png", alt: "Navidad juntos", hint: "christmas together" },
-  },
-  {
-    date: "1 de Mayo, 2023",
-    title: "Adoptamos a Nube",
-    description: "Llegó a nuestras vidas esa pequeña bola de pelos y la llenó de alegría y travesuras. Nuestra familia creció ese día.",
-    image: { src: "https://placehold.co/600x400.png", alt: "Nuestra mascota Nube", hint: "puppy adoption" },
-  },
-];
+import { getTimelineMemories } from "@/lib/image-service";
 
 export default function TimelinePage() {
+  const memories = getTimelineMemories();
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="mb-8 text-center text-4xl font-bold font-headline text-primary">Nuestra Historia de Amor</h1>

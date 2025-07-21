@@ -1,21 +1,9 @@
 import Image from "next/image";
-
-const collageImages = [
-  { src: "https://placehold.co/400x600.png", hint: "couple smiling" },
-  { src: "https://placehold.co/600x400.png", hint: "holding hands" },
-  { src: "https://placehold.co/400x400.png", hint: "laughing together" },
-  { src: "https://placehold.co/600x400.png", hint: "sunset kiss" },
-  { src: "https://placehold.co/400x600.png", hint: "city date" },
-  { src: "https://placehold.co/400x400.png", hint: "picnic park" },
-  { src: "https://placehold.co/600x400.png", hint: "dancing kitchen" },
-  { src: "https://placehold.co/400x600.png", hint: "mountain view" },
-  { src: "https://placehold.co/400x400.png", hint: "silly faces" },
-  { src: "https://placehold.co/600x400.png", hint: "reading together" },
-  { src: "https://placehold.co/400x600.png", hint: "beach selfie" },
-  { src: "https://placehold.co/400x400.png", hint: "cooking together" },
-];
+import { getCollageImages } from "@/lib/image-service";
 
 export default function Home() {
+  const collageImages = getCollageImages();
+  
   return (
     <div className="relative flex flex-col items-center justify-center min-h-[calc(100vh-56px)] text-center p-4 overflow-hidden">
       <div className="absolute inset-0 w-full h-full -z-20">
