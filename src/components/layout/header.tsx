@@ -9,6 +9,7 @@ import {
   Image as ImageIcon,
   Calendar,
   PawPrint,
+  CalendarDays,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -35,6 +36,7 @@ const navLinks = [
   { href: "/timeline", label: "Nuestra Historia", icon: Calendar },
   { href: "/playlist", label: "Playlist", icon: Music },
   { href: "/joaquin", label: "Joaquín", icon: PawPrint },
+  { href: "/eventos", label: "Eventos", icon: CalendarDays },
 ];
 
 export function AppHeader() {
@@ -108,14 +110,10 @@ export function AppHeader() {
                   <SheetTitle className="sr-only">Menú de Navegación</SheetTitle>
                 </SheetHeader>
                 <div className="p-4">
-                  <Link
-                    href="/"
-                    className="mb-8 flex items-center gap-2 text-lg font-bold"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
+                  <div className="mb-8 flex items-center gap-2 text-lg font-bold">
                     <Heart className="h-6 w-6 text-primary" />
                     <span className="font-headline">Dannonino</span>
-                  </Link>
+                  </div>
                   <div className="flex flex-col space-y-2">
                     {navLinks.map((link) => (
                       <MobileNavLink key={link.href} {...link} />
