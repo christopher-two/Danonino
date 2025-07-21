@@ -2,6 +2,7 @@ import 'server-only';
 import { db } from './firebase';
 import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
 import { unstable_noStore as noStore } from 'next/cache';
+import { google } from 'googleapis';
 
 interface Moment {
   id: string;
@@ -15,9 +16,51 @@ interface Moment {
   };
 }
 
+interface DriveImage {
+  src: string;
+  alt: string;
+  hint: string;
+}
+
+const apiKey = process.env.GOOGLE_API_KEY;
+const folderId = process.env.DRIVE_FOLDER_ID;
+
+const drive = google.drive({
+  version: 'v3',
+  auth: apiKey,
+});
+
+async function getImagesFromDrive(): Promise<DriveImage[]> {
+  noStore();
+  if (!apiKey || !folderId) {
+    console.warn('Google Drive API key or Folder ID is not configured.');
+    return [];
+  }
+
+  try {
+    const res = await drive.files.list({
+      q: `'${folderId}' in parents and mimeType contains 'image/'`,
+      fields: 'files(id, name, webViewLink, thumbnailLink)',
+      key: apiKey,
+    });
+
+    if (res.data.files) {
+      return res.data.files.map((file) => ({
+        // Use thumbnailLink and modify it for a higher resolution version
+        src: file.thumbnailLink ? file.thumbnailLink.replace(/=s\d+/, '=s800') : `https://placehold.co/600x400.png`,
+        alt: file.name || 'Imagen de Dany',
+        hint: 'couple love',
+      }));
+    }
+  } catch (error) {
+    console.error('Error fetching images from Google Drive:', error);
+  }
+  return [];
+}
+
+
 async function getMomentsFromFirestore(): Promise<Moment[]> {
-  noStore(); // Opt out of caching for this function
-  
+  noStore();
   try {
     const momentsCollection = collection(db, 'moments');
     const q = query(momentsCollection, orderBy('date', 'desc'));
@@ -25,7 +68,7 @@ async function getMomentsFromFirestore(): Promise<Moment[]> {
 
     const momentsList = momentsSnapshot.docs.map(doc => {
       const data = doc.data();
-      const imageUrl = data.image?.src || data.image; // Handle both object and string format
+      const imageUrl = data.image?.src || data.image;
 
       let hint = "couple love";
       if (data.title) {
@@ -44,7 +87,7 @@ async function getMomentsFromFirestore(): Promise<Moment[]> {
           hint: hint,
         },
       };
-    }).filter(m => m.image.src); // Filter out moments without a valid image src
+    }).filter(m => m.image.src);
     
     return momentsList;
   } catch (error) {
@@ -61,17 +104,16 @@ function getFallbackImages(count = 20) {
   }));
 }
 
-
 export async function getCollageImages() {
-  const moments = await getMomentsFromFirestore();
-  if (!moments.length) return getFallbackImages(40);
-  return moments.map(m => m.image);
+  const driveImages = await getImagesFromDrive();
+  if (!driveImages.length) return getFallbackImages(40);
+  return driveImages;
 }
 
 export async function getGalleryPhotos() {
-  const moments = await getMomentsFromFirestore();
-  if (!moments.length) return getFallbackImages(50);
-  return moments.map(m => m.image);
+  const driveImages = await getImagesFromDrive();
+  if (!driveImages.length) return getFallbackImages(50);
+  return driveImages;
 }
 
 export async function getTimelineMemories() {
