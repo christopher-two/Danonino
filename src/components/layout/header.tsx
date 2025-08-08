@@ -12,7 +12,7 @@ import {
   CalendarDays,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +35,12 @@ const navLinks = [
 
 export function AppHeader() {
   const pathname = usePathname();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
 
   const NavLink = ({ href, label, icon: Icon }: (typeof navLinks)[0]) => (
     <TooltipProvider>
@@ -67,7 +73,7 @@ export function AppHeader() {
           {navLinks.map((link) => (
             <NavLink key={link.href} {...link} />
           ))}
-          {pathname === "/gallery" && <AddPhotoButton />}
+          {isClient && pathname === "/gallery" && <AddPhotoButton />}
         </nav>
       </div>
     </header>

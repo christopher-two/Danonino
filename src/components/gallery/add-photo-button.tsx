@@ -32,7 +32,6 @@ function SubmitButton() {
 }
 
 export function AddPhotoButton() {
-  const [isMounted, setIsMounted] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
@@ -40,10 +39,6 @@ export function AddPhotoButton() {
 
   const initialState: FormState = { message: "", errors: {} };
   const [state, dispatch] = useActionState(addPhotoAction, initialState);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   useEffect(() => {
     if (state.message) {
@@ -77,11 +72,6 @@ export function AddPhotoButton() {
       setPreview(null);
     }
   };
-
-  if (!isMounted) {
-    // Render a placeholder on the server and during initial client render
-    return <div className="h-10 w-10" />;
-  }
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={(isOpen) => {
