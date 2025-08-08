@@ -7,9 +7,6 @@ export default async function GalleryPage() {
 
   return (
     <div className="relative">
-      <div className="fixed top-20 right-8 z-50">
-        <AddPhotoButton />
-      </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-0.5 pt-20">
         {photos.map((photo, index) => (
           <div key={index} className="aspect-square relative group">

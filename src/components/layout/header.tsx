@@ -22,6 +22,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { AddPhotoButton } from "../gallery/add-photo-button";
 
 const navLinks = [
   { href: "/", label: "Inicio", icon: Heart },
@@ -66,6 +67,7 @@ export function AppHeader() {
           {navLinks.map((link) => (
             <NavLink key={link.href} {...link} />
           ))}
+          {pathname === "/gallery" && <AddPhotoButton />}
         </nav>
       </div>
     </header>

@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { addPhotoAction, type FormState } from "@/app/gallery/actions";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+import { cn } from "@/lib/utils";
 
 function SubmitButton() {
   return (
@@ -85,14 +86,17 @@ export function AddPhotoButton() {
         <Tooltip>
           <TooltipTrigger asChild>
             <DialogTrigger asChild>
-              <Button size="icon" className="rounded-full shadow-lg w-12 h-12">
-                <PlusCircle className="h-6 w-6" />
+               <button className={cn(
+                "flex items-center justify-center rounded-full p-2.5 text-sm font-medium transition-colors hover:bg-primary/10",
+                "text-foreground/70"
+              )}>
+                <PlusCircle className="h-5 w-5" />
                 <span className="sr-only">Añadir Foto</span>
-              </Button>
+              </button>
             </DialogTrigger>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Añadir Foto</p>
+            <p>Añadir Foto a la Galería</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
