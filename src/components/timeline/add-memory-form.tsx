@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useActionState } from "react";
-import { CalendarIcon, PlusCircle } from "lucide-react";
+import { useState, useEffect, useActionState, useRef } from "react";
+import { CalendarIcon, PlusCircle, Upload } from "lucide-react";
 import { format } from "date-fns";
 import { es } from 'date-fns/locale';
 
@@ -38,6 +38,7 @@ export function AddMemoryForm() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [date, setDate] = useState<Date | undefined>();
   const { toast } = useToast();
+  const formRef = useRef<HTMLFormElement>(null);
 
   const initialState: FormState = { message: "", errors: {} };
   const [state, dispatch] = useActionState(addMemoryAction, initialState);
@@ -56,6 +57,7 @@ export function AddMemoryForm() {
           description: state.message,
         });
         setDate(undefined);
+        formRef.current?.reset();
         setIsDialogOpen(false);
       }
     }
@@ -76,7 +78,7 @@ export function AddMemoryForm() {
             Completa los detalles de este momento especial para añadirlo a vuestra historia.
           </DialogDescription>
         </DialogHeader>
-        <form action={dispatch} className="grid gap-4 py-4">
+        <form ref={formRef} action={dispatch} className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="title" className="text-right">
               Título
@@ -115,6 +117,15 @@ export function AddMemoryForm() {
             <input type="hidden" name="date" value={date?.toISOString() || ""} />
              {state.errors?.date && (
               <p className="col-span-4 text-right text-xs text-destructive">{state.errors.date[0]}</p>
+            )}
+          </div>
+           <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="image" className="text-right">
+              Imagen
+            </Label>
+            <Input id="image" name="image" type="file" className="col-span-3" accept="image/png, image/jpeg, image/webp" />
+            {state.errors?.image && (
+              <p className="col-span-4 text-right text-xs text-destructive">{state.errors.image[0]}</p>
             )}
           </div>
           <div className="grid grid-cols-4 items-center gap-4">

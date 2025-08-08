@@ -3,12 +3,24 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { addDoc, collection } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { db, storage } from "@/lib/firebase";
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
 const FormSchema = z.object({
   title: z.string().min(1, { message: "El título es requerido." }),
   description: z.string().min(1, { message: "La descripción es requerida." }),
   date: z.date({ required_error: "La fecha es requerida." }),
+  image: z
+    .any()
+    .refine((file) => file?.size > 0, "La imagen es requerida.")
+    .refine((file) => file?.size <= MAX_FILE_SIZE, `El tamaño máximo de la imagen es 5MB.`)
+    .refine(
+      (file) => ACCEPTED_IMAGE_TYPES.includes(file?.type),
+      "Solo se aceptan formatos .jpg, .jpeg, .png y .webp."
+    ),
 });
 
 export type FormState = {
@@ -37,6 +49,7 @@ export async function addMemoryAction(
     title: formData.get("title"),
     description: formData.get("description"),
     date: formData.get("date"),
+    image: formData.get("image"),
   };
 
   const validatedFields = FormSchema.safeParse({
@@ -51,17 +64,28 @@ export async function addMemoryAction(
     };
   }
 
-  const { title, description, date } = validatedFields.data;
+  const { title, description, date, image } = validatedFields.data;
   
-  // TODO: Implement file upload to Firebase Storage
-  const image = "https://placehold.co/600x400.png";
+  let imageUrl = '';
+  try {
+    const imageFile = image as File;
+    const storageRef = ref(storage, `moments/${Date.now()}-${imageFile.name}`);
+    const snapshot = await uploadBytes(storageRef, imageFile);
+    imageUrl = await getDownloadURL(snapshot.ref);
+  } catch(error) {
+     console.error("Error al subir imagen:", error);
+     return {
+      message: "Error de almacenamiento: no se pudo subir la imagen.",
+    };
+  }
+
 
   try {
     await addDoc(collection(db, 'moments'), {
       title,
       description,
       date: formatDate(date),
-      image,
+      image: imageUrl,
     });
   } catch (error) {
     console.error("Error al añadir documento:", error);
