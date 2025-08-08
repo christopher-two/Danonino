@@ -26,16 +26,21 @@ function SubmitButton() {
   return (
     <Button type="submit">
       <Upload className="mr-2 h-4 w-4" />
-      Subir Foto
+      Subir Fotos
     </Button>
   );
 }
 
 export function AddPhotoButton() {
+  const [isClient, setIsClient] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [previews, setPreviews] = useState<string[]>([]);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const initialState: FormState = { message: "", errors: {} };
   const [state, dispatch] = useActionState(addPhotoAction, initialState);
@@ -45,7 +50,7 @@ export function AddPhotoButton() {
       if (state.errors) {
         toast({
           variant: "destructive",
-          title: "Error al subir la imagen",
+          title: "Error al subir las imágenes",
           description: state.message,
         });
       } else {
@@ -54,30 +59,51 @@ export function AddPhotoButton() {
           description: state.message,
         });
         formRef.current?.reset();
-        setPreview(null);
+        setPreviews([]);
         setIsDialogOpen(false);
       }
     }
   }, [state, toast]);
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const fileArray = Array.from(files);
+      const filePromises = fileArray.map((file) => {
+        return new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      });
+
+      Promise.all(filePromises)
+        .then((base64Files) => {
+          setPreviews(base64Files);
+        })
+        .catch((error) => {
+          console.error("Error al leer los archivos:", error);
+          setPreviews([]);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "No se pudieron previsualizar los archivos.",
+          });
+        });
     } else {
-      setPreview(null);
+      setPreviews([]);
     }
   };
+  
+  if (!isClient) return null;
+
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={(isOpen) => {
       if (!isOpen) {
         formRef.current?.reset();
-        setPreview(null);
+        setPreviews([]);
       }
       setIsDialogOpen(isOpen);
     }}>
@@ -100,24 +126,28 @@ export function AddPhotoButton() {
         </Tooltip>
       </TooltipProvider>
 
-      <DialogContent className="sm:max-w-[480px]">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Añadir una nueva foto</DialogTitle>
+          <DialogTitle>Añadir nuevas fotos</DialogTitle>
           <DialogDescription>
-            Selecciona una imagen de tu dispositivo para añadirla a la galería.
+            Selecciona una o varias imágenes de tu dispositivo para añadirlas a la galería.
           </DialogDescription>
         </DialogHeader>
         <form ref={formRef} action={dispatch} className="grid gap-4 py-4">
            <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="image">Imagen</Label>
-            <Input id="image" name="image" type="file" accept="image/png, image/jpeg, image/webp" onChange={handleFileChange}/>
-             {preview && (
-              <div className="mt-4 relative aspect-video w-full">
-                <img src={preview} alt="Vista previa de la imagen" className="rounded-md object-contain w-full h-full" />
+            <Label htmlFor="images">Imágenes</Label>
+            <Input id="images" name="images" type="file" multiple accept="image/png, image/jpeg, image/webp" onChange={handleFileChange}/>
+             {previews.length > 0 && (
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                {previews.map((src, index) => (
+                    <div key={index} className="relative aspect-square w-full">
+                        <img src={src} alt={`Vista previa de la imagen ${index + 1}`} className="rounded-md object-cover w-full h-full" />
+                    </div>
+                ))}
               </div>
             )}
-            {state.errors?.image && (
-              <p className="text-xs text-destructive">{state.errors.image[0]}</p>
+            {state.errors?.images && (
+              <p className="text-xs text-destructive">{state.errors.images.join(", ")}</p>
             )}
           </div>
           <DialogFooter>
