@@ -2,8 +2,6 @@ import 'server-only';
 import { db } from './firebase';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { google } from 'googleapis';
-import { unstable_noStore as noStore } from 'next/cache';
-
 
 interface Moment {
   id: string;
@@ -46,7 +44,7 @@ const drive = google.drive({
 
 async function getImagesFromDriveFolder(folderId: string): Promise<DriveImage[]> {
   if (!apiKey || !folderId) {
-    console.warn('Google Drive API key or Folder ID is not configured.');
+    console.warn('ADVERTENCIA: La clave de la API de Google (GOOGLE_API_KEY) o el ID de la carpeta (DRIVE_FOLDER_ID) no están configurados en las variables de entorno. No se pueden cargar imágenes de Google Drive.');
     return [];
   }
 
@@ -64,16 +62,13 @@ async function getImagesFromDriveFolder(folderId: string): Promise<DriveImage[]>
       }));
     }
   } catch (error) {
-    console.error(`Error fetching images from Google Drive folder ${folderId}:`, error);
+    console.error(`Error al obtener imágenes de la carpeta de Google Drive ${folderId}:`, error);
   }
   return [];
 }
 
 
 async function getMomentsFromFirestore(): Promise<Moment[]> {
-  // This remains dynamic to show new memories instantly
-  noStore();
-  
   try {
     const momentsCollection = collection(db, 'moments');
     const q = query(momentsCollection, orderBy('date', 'desc'));
@@ -118,14 +113,20 @@ function getFallbackImages(count = 20) {
 }
 
 export async function getCollageImages() {
-  if (!driveFolderId) return getFallbackImages(40);
+  if (!driveFolderId) {
+      console.warn('ADVERTENCIA: DRIVE_FOLDER_ID no está configurado.');
+      return getFallbackImages(40);
+  }
   const driveImages = await getImagesFromDriveFolder(driveFolderId);
   if (driveImages.length === 0) return getFallbackImages(40);
   return driveImages;
 }
 
 export async function getGalleryPhotos() {
-  if (!driveFolderId) return getFallbackImages(50);
+  if (!driveFolderId) {
+    console.warn('ADVERTENCIA: DRIVE_FOLDER_ID no está configurado.');
+    return getFallbackImages(50);
+  }
   const driveImages = await getImagesFromDriveFolder(driveFolderId);
   if (driveImages.length === 0) return getFallbackImages(50);
   return driveImages;
@@ -152,7 +153,7 @@ export async function getTimelineMemories() {
 
 export async function getJoaquinAdventures(): Promise<Adventure[]> {
   if (!apiKey || !joaquinDriveFolderId) {
-    console.warn("Google Drive API key or Joaquin's Folder ID is not configured.");
+    console.warn("ADVERTENCIA: La clave de la API de Google (GOOGLE_API_KEY) o el ID de la carpeta de Joaquín (DRIVE_FOLDER_ID_JOAQUIN) no están configurados.");
     return [];
   }
 
@@ -189,7 +190,7 @@ export async function getJoaquinAdventures(): Promise<Adventure[]> {
 
     return adventures.filter(adventure => adventure.images.length > 0).sort((a, b) => a.title.localeCompare(b.title));
   } catch (error) {
-    console.error("Error fetching Joaquin's adventures from Google Drive:", error);
+    console.error("Error al obtener las aventuras de Joaquín desde Google Drive:", error);
     return [];
   }
 }
@@ -197,7 +198,6 @@ export async function getJoaquinAdventures(): Promise<Adventure[]> {
 // --- Events Logic ---
 
 export async function getEvents(): Promise<Event[]> {
-  noStore(); // Always fetch the latest events
   try {
     const eventsCollection = collection(db, 'events');
     const q = query(eventsCollection, orderBy('date', 'asc'));
