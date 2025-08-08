@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { addPhotoAction, type FormState } from "@/app/gallery/actions";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
 function SubmitButton() {
   return (
@@ -80,12 +81,22 @@ export function AddPhotoButton() {
         setPreview(null);
       }
     }}>
-      <DialogTrigger asChild>
-        <Button size="lg" className="rounded-full shadow-lg">
-          <PlusCircle className="mr-2" />
-          Añadir Foto
-        </Button>
-      </DialogTrigger>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DialogTrigger asChild>
+              <Button size="icon" className="rounded-full shadow-lg w-12 h-12">
+                <PlusCircle className="h-6 w-6" />
+                <span className="sr-only">Añadir Foto</span>
+              </Button>
+            </DialogTrigger>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Añadir Foto</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
           <DialogTitle>Añadir una nueva foto</DialogTitle>
