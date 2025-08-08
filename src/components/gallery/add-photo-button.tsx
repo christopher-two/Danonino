@@ -76,19 +76,19 @@ export function AddPhotoButton() {
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={(isOpen) => {
-      setIsDialogOpen(isOpen);
       if (!isOpen) {
         formRef.current?.reset();
         setPreview(null);
       }
+      setIsDialogOpen(isOpen);
     }}>
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <DialogTrigger asChild>
                <button className={cn(
-                "flex items-center justify-center rounded-full p-2.5 text-sm font-medium transition-colors hover:bg-primary/10",
-                "text-foreground/70"
+                "flex items-center justify-center rounded-full p-2.5 text-sm font-medium transition-colors",
+                "text-primary hover:bg-primary/20"
               )}>
                 <PlusCircle className="h-5 w-5" />
                 <span className="sr-only">Añadir Foto</span>
