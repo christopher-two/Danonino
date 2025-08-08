@@ -112,7 +112,7 @@ export function AddMemoryForm() {
                 />
               </PopoverContent>
             </Popover>
-            <input type="hidden" name="date" value={date?.toISOString()} />
+            <input type="hidden" name="date" value={date?.toISOString() || ""} />
              {state.errors?.date && (
               <p className="col-span-4 text-right text-xs text-destructive">{state.errors.date[0]}</p>
             )}
@@ -124,15 +124,6 @@ export function AddMemoryForm() {
             <Textarea id="description" name="description" className="col-span-3" />
              {state.errors?.description && (
               <p className="col-span-4 text-right text-xs text-destructive">{state.errors.description[0]}</p>
-            )}
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="image" className="text-right">
-              URL de Imagen
-            </Label>
-            <Input id="image" name="image" className="col-span-3" />
-             {state.errors?.image && (
-              <p className="col-span-4 text-right text-xs text-destructive">{state.errors.image[0]}</p>
             )}
           </div>
           <DialogFooter>

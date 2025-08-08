@@ -18,11 +18,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'drive.google.com',
-      },
-      {
-        protocol: "https",
-        hostname: "**.googleusercontent.com",
+        hostname: 'firebasestorage.googleapis.com',
       },
       {
         protocol: 'https',

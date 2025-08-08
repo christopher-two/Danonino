@@ -9,7 +9,6 @@ const FormSchema = z.object({
   title: z.string().min(1, { message: "El título es requerido." }),
   description: z.string().min(1, { message: "La descripción es requerida." }),
   date: z.date({ required_error: "La fecha es requerida." }),
-  image: z.string().url({ message: "Por favor, introduce una URL de imagen válida." }),
 });
 
 export type FormState = {
@@ -38,7 +37,6 @@ export async function addMemoryAction(
     title: formData.get("title"),
     description: formData.get("description"),
     date: formData.get("date"),
-    image: formData.get("image"),
   };
 
   const validatedFields = FormSchema.safeParse({
@@ -53,7 +51,10 @@ export async function addMemoryAction(
     };
   }
 
-  const { title, description, date, image } = validatedFields.data;
+  const { title, description, date } = validatedFields.data;
+  
+  // TODO: Implement file upload to Firebase Storage
+  const image = "https://placehold.co/600x400.png";
 
   try {
     await addDoc(collection(db, 'moments'), {
