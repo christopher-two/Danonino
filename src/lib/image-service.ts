@@ -33,7 +33,7 @@ export interface Event {
   description: string;
 }
 
-const GALLERY_PATH = 'gallery';
+const GALLERY_PATH = 'imagenes';
 const JOAQUIN_PATH = 'joaquin';
 
 async function getImagesFromStoragePath(path: string): Promise<StorageImage[]> {
